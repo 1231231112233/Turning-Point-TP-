@@ -534,7 +534,3 @@ INSERT INTO tournaments (name, game_id, prize_pool, max_teams, start_date, statu
 ('The International 2026', 1, 3000000, 16, '2026-08-15', 'registration'),
 ('IEM Cologne 2026', 2, 1000000, 16, '2026-07-25', 'registration');
 ```
-
----
-
-**Теперь проект полностью готов к загрузке на GitHub и защите курсовой работы!** 🚀
