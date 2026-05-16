@@ -1,0 +1,941 @@
+openapi: 3.0.3
+info:
+  title: Turning Point (TP) API
+  version: 1.0.0
+  description: API для управления киберспортивными турнирами, командами, игроками и трансферами
+
+servers:
+  - url: http://localhost:8080
+
+paths:
+  # ==================== GAMES ====================
+  /games:
+    get:
+      summary: Получить список всех дисциплин
+      responses:
+        "200":
+          description: Список дисциплин
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Game'
+
+  /games/{id}:
+    get:
+      summary: Получить дисциплину по ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Дисциплина найдена
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Game'
+        "404":
+          description: Дисциплина не найдена
+
+  # ==================== TEAMS ====================
+  /teams:
+    get:
+      summary: Получить список всех команд
+      parameters:
+        - name: gameId
+          in: query
+          required: false
+          schema:
+            type: integer
+          description: Фильтр по дисциплине
+      responses:
+        "200":
+          description: Список команд
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Team'
+    post:
+      summary: Создать новую команду
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateTeamRequest'
+      responses:
+        "201":
+          description: Команда создана
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Team'
+        "400":
+          description: Ошибка валидации
+
+  /teams/{id}:
+    get:
+      summary: Получить команду по ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Команда найдена
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Team'
+        "404":
+          description: Команда не найдена
+    delete:
+      summary: Удалить команду
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Команда удалена
+        "404":
+          description: Команда не найдена
+
+  /teams/{id}/budget:
+    put:
+      summary: Обновить бюджет команды
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BudgetUpdateRequest'
+      responses:
+        "200":
+          description: Бюджет обновлён
+        "404":
+          description: Команда не найдена
+
+  # ==================== PLAYERS ====================
+  /players:
+    get:
+      summary: Получить список всех игроков
+      parameters:
+        - name: teamId
+          in: query
+          required: false
+          schema:
+            type: integer
+          description: Фильтр по команде
+        - name: gameId
+          in: query
+          required: false
+          schema:
+            type: integer
+          description: Фильтр по дисциплине
+      responses:
+        "200":
+          description: Список игроков
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Player'
+    post:
+      summary: Создать нового игрока
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreatePlayerRequest'
+      responses:
+        "201":
+          description: Игрок создан
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Player'
+        "400":
+          description: Ошибка валидации
+
+  /players/{id}:
+    get:
+      summary: Получить игрока по ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Игрок найден
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Player'
+        "404":
+          description: Игрок не найден
+    delete:
+      summary: Удалить игрока
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Игрок удалён
+        "404":
+          description: Игрок не найден
+
+  /players/{id}/team:
+    put:
+      summary: Перевести игрока в другую команду
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TeamUpdateRequest'
+      responses:
+        "200":
+          description: Команда игрока обновлена
+        "404":
+          description: Игрок не найден
+
+  /players/{id}/rating:
+    put:
+      summary: Изменить рейтинг игрока
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RatingUpdateRequest'
+      responses:
+        "200":
+          description: Рейтинг обновлён
+        "404":
+          description: Игрок не найден
+
+  # ==================== TOURNAMENTS ====================
+  /tournaments:
+    get:
+      summary: Получить список всех турниров
+      parameters:
+        - name: gameId
+          in: query
+          required: false
+          schema:
+            type: integer
+          description: Фильтр по дисциплине
+      responses:
+        "200":
+          description: Список турниров
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Tournament'
+    post:
+      summary: Создать новый турнир
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateTournamentRequest'
+      responses:
+        "201":
+          description: Турнир создан
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Tournament'
+        "400":
+          description: Ошибка валидации
+
+  /tournaments/{id}:
+    get:
+      summary: Получить турнир по ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Турнир найден
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Tournament'
+        "404":
+          description: Турнир не найден
+    delete:
+      summary: Удалить турнир
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Турнир удалён
+        "404":
+          description: Турнир не найден
+
+  /tournaments/{id}/status:
+    put:
+      summary: Изменить статус турнира
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StatusUpdateRequest'
+      responses:
+        "200":
+          description: Статус обновлён
+        "404":
+          description: Турнир не найден
+
+  /tournaments/{tournamentId}/register/{teamId}:
+    post:
+      summary: СЛОЖНАЯ ОПЕРАЦИЯ - Зарегистрировать команду на турнир
+      parameters:
+        - name: tournamentId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: teamId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Команда зарегистрирована
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        "400":
+          description: Ошибка (нет мест, уже зарегистрирована)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /tournaments/{tournamentId}/distribute-prizes:
+    post:
+      summary: СЛОЖНАЯ ОПЕРАЦИЯ - Распределить призовые
+      parameters:
+        - name: tournamentId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/TournamentResultRequest'
+      responses:
+        "200":
+          description: Призовые распределены
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        "400":
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  # ==================== MATCHES ====================
+  /matches:
+    get:
+      summary: Получить список всех матчей
+      parameters:
+        - name: tournamentId
+          in: query
+          required: false
+          schema:
+            type: integer
+          description: Фильтр по турниру
+      responses:
+        "200":
+          description: Список матчей
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Match'
+    post:
+      summary: Создать новый матч
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateMatchRequest'
+      responses:
+        "201":
+          description: Матч создан
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Match'
+        "400":
+          description: Ошибка валидации
+
+  /matches/{id}:
+    get:
+      summary: Получить матч по ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Матч найден
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Match'
+        "404":
+          description: Матч не найден
+    delete:
+      summary: Удалить матч
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Матч удалён
+        "404":
+          description: Матч не найден
+
+  /matches/{id}/finish:
+    put:
+      summary: СЛОЖНАЯ ОПЕРАЦИЯ - Завершить матч
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FinishMatchRequest'
+      responses:
+        "200":
+          description: Матч завершён
+        "404":
+          description: Матч не найден
+
+  # ==================== TRANSFERS ====================
+  /transfers:
+    get:
+      summary: Получить список всех трансферов
+      responses:
+        "200":
+          description: Список трансферов
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Transfer'
+    post:
+      summary: СЛОЖНАЯ ОПЕРАЦИЯ - Трансфер игрока
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TransferRequest'
+      responses:
+        "200":
+          description: Трансфер выполнен
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TransferResponse'
+        "400":
+          description: Ошибка (недостаточно средств, игрок не найден)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /transfers/{id}:
+    get:
+      summary: Получить трансфер по ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Трансфер найден
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Transfer'
+        "404":
+          description: Трансфер не найден
+
+  /transfers/player/{playerId}:
+    get:
+      summary: Получить все трансферы игрока
+      parameters:
+        - name: playerId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Список трансферов игрока
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Transfer'
+
+components:
+  schemas:
+    # ==================== GAME ====================
+    Game:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        name:
+          type: string
+          example: "Dota 2"
+
+    # ==================== TEAM ====================
+    Team:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        name:
+          type: string
+          example: "Team Spirit"
+        gameId:
+          type: integer
+          example: 1
+        budget:
+          type: number
+          example: 250000
+        captainId:
+          type: integer
+          nullable: true
+          example: 1
+        createdAt:
+          type: string
+          format: date
+          example: "2024-01-01"
+
+    CreateTeamRequest:
+      type: object
+      required:
+        - name
+        - gameId
+        - budget
+        - createdAt
+      properties:
+        name:
+          type: string
+          example: "New Team"
+        gameId:
+          type: integer
+          example: 1
+        budget:
+          type: number
+          example: 100000
+        captainId:
+          type: integer
+          nullable: true
+        createdAt:
+          type: string
+          format: date
+          example: "2024-01-01"
+
+    BudgetUpdateRequest:
+      type: object
+      required:
+        - newBudget
+      properties:
+        newBudget:
+          type: number
+          example: 500000
+
+    # ==================== PLAYER ====================
+    Player:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        nickname:
+          type: string
+          example: "Yatoro"
+        realName:
+          type: string
+          example: "Ilya Mulyarchuk"
+        gameId:
+          type: integer
+          example: 1
+        teamId:
+          type: integer
+          nullable: true
+          example: 1
+        rating:
+          type: integer
+          example: 2850
+        role:
+          type: string
+          example: "Carry"
+
+    CreatePlayerRequest:
+      type: object
+      required:
+        - nickname
+        - realName
+        - gameId
+        - rating
+        - role
+      properties:
+        nickname:
+          type: string
+          example: "NewPlayer"
+        realName:
+          type: string
+          example: "Ivan Ivanov"
+        gameId:
+          type: integer
+          example: 1
+        teamId:
+          type: integer
+          nullable: true
+        rating:
+          type: integer
+          example: 2500
+        role:
+          type: string
+          example: "Carry"
+
+    TeamUpdateRequest:
+      type: object
+      properties:
+        newTeamId:
+          type: integer
+          nullable: true
+          example: 2
+
+    RatingUpdateRequest:
+      type: object
+      required:
+        - newRating
+      properties:
+        newRating:
+          type: integer
+          example: 2600
+
+    # ==================== TOURNAMENT ====================
+    Tournament:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        name:
+          type: string
+          example: "The International 2026"
+        gameId:
+          type: integer
+          example: 1
+        prizePool:
+          type: number
+          example: 3000000
+        maxTeams:
+          type: integer
+          example: 16
+        startDate:
+          type: string
+          format: date
+          example: "2026-08-15"
+        status:
+          type: string
+          example: "registration"
+
+    CreateTournamentRequest:
+      type: object
+      required:
+        - name
+        - gameId
+        - prizePool
+        - maxTeams
+        - startDate
+        - status
+      properties:
+        name:
+          type: string
+          example: "New Tournament"
+        gameId:
+          type: integer
+          example: 1
+        prizePool:
+          type: number
+          example: 100000
+        maxTeams:
+          type: integer
+          example: 8
+        startDate:
+          type: string
+          format: date
+          example: "2026-12-01"
+        status:
+          type: string
+          example: "registration"
+
+    StatusUpdateRequest:
+      type: object
+      required:
+        - status
+      properties:
+        status:
+          type: string
+          example: "active"
+
+    TournamentResultRequest:
+      type: object
+      required:
+        - teamId
+        - place
+        - prizeAmount
+      properties:
+        teamId:
+          type: integer
+          example: 1
+        place:
+          type: integer
+          example: 1
+        prizeAmount:
+          type: number
+          example: 50000
+
+    # ==================== MATCH ====================
+    Match:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        tournamentId:
+          type: integer
+          example: 1
+        round:
+          type: integer
+          example: 1
+        team1Id:
+          type: integer
+          nullable: true
+          example: 1
+        team2Id:
+          type: integer
+          nullable: true
+          example: 2
+        winnerId:
+          type: integer
+          nullable: true
+        scoreTeam1:
+          type: integer
+          example: 0
+        scoreTeam2:
+          type: integer
+          example: 0
+        scheduledDate:
+          type: string
+          format: date
+          example: "2026-08-20"
+        status:
+          type: string
+          example: "scheduled"
+
+    CreateMatchRequest:
+      type: object
+      required:
+        - tournamentId
+        - round
+        - scheduledDate
+      properties:
+        tournamentId:
+          type: integer
+          example: 1
+        round:
+          type: integer
+          example: 1
+        team1Id:
+          type: integer
+          nullable: true
+        team2Id:
+          type: integer
+          nullable: true
+        scheduledDate:
+          type: string
+          format: date
+          example: "2026-08-20"
+
+    FinishMatchRequest:
+      type: object
+      required:
+        - winnerId
+        - scoreTeam1
+        - scoreTeam2
+      properties:
+        winnerId:
+          type: integer
+          example: 1
+        scoreTeam1:
+          type: integer
+          example: 2
+        scoreTeam2:
+          type: integer
+          example: 1
+
+    # ==================== TRANSFER ====================
+    Transfer:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        playerId:
+          type: integer
+          example: 1
+        fromTeamId:
+          type: integer
+          nullable: true
+          example: 1
+        toTeamId:
+          type: integer
+          nullable: true
+          example: 2
+        fee:
+          type: number
+          example: 50000
+        status:
+          type: string
+          example: "completed"
+        transferDate:
+          type: string
+          format: date
+          example: "2026-04-25"
+
+    TransferRequest:
+      type: object
+      required:
+        - playerId
+        - toTeamId
+        - fee
+      properties:
+        playerId:
+          type: integer
+          example: 1
+        toTeamId:
+          type: integer
+          example: 2
+        fee:
+          type: number
+          example: 50000
+
+    TransferResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          example: "Yatoro перешёл из Team Spirit в Team Liquid за 50000.0!"
+        transfer:
+          $ref: '#/components/schemas/Transfer'
+
+    # ==================== COMMON ====================
+    SuccessResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          example: "Операция выполнена успешно"
+
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+          example: "Ошибка выполнения операции"
